@@ -1,0 +1,35 @@
+<?php
+/**
+ * @file
+ * Tonic brings some of Gin to the front end, such as the admin menu and
+ * modal styles.
+ */
+
+/**
+ * Implements hook_preprocess_page().
+ *
+ * Add admin bar styles to the layout.
+ */
+function tonic_preprocess_page(&$variables) {
+  if (_tonic_gin_is_active() && $GLOBALS['theme_key'] != 'gin') {
+    $path_to_gin = backdrop_get_path('theme', 'gin');
+    backdrop_add_css($path_to_gin . '/dist/css/theme/accent.css');
+    backdrop_add_css($path_to_gin . '/dist/css/theme/variables.css');
+    backdrop_add_css($path_to_gin . '/dist/css/layout/gin_admin_bar.css');
+  }
+}
+
+/**
+ * Helper function to see if Gin is active. Replicates _gin_is_active() because
+ * we can't assume that function can be called if the theme isn't currently
+ * loaded.
+ */
+function _tonic_gin_is_active() {
+  if (user_access('access administration bar')) {
+    $themes = list_themes();
+    if ($themes['gin']->status) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}

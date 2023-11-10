@@ -1,0 +1,9 @@
+name = Tonic
+description = Tonic pairs well with the Gin admin theme to bring some Gin to the front end.
+backdrop = 1.x
+package = Administration
+type = module
+
+tags[] = Menus
+tags[] = Site Navigation
+tags[] = User Interface
