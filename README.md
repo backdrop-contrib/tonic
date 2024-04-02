@@ -5,6 +5,10 @@ theme.
 
 Details will be updated as functionality is added and tested.
 
+## Required Theme
+
+* [Gin](https://github.com/backdrop-contrib/gin)
+
 ## Installation
 
 - Install this module using the [official Backdrop CMS instructions](https://backdropcms.org/guide/modules)
@@ -12,10 +16,6 @@ Details will be updated as functionality is added and tested.
 ## Usage
 
 - Usage instructions can be [viewed and edited in the Wiki](https://github.com/backdrop-contrib/tonic/wiki).
-
-## Recommended Modules
-
-* [Gin](https://github.com/backdrop-contrib/gin)
 
 ## Issues
 

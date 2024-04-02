@@ -1,0 +1,16 @@
+.admin-bar body.tonic--enabled {
+  border-top: none;
+}
+.admin-bar body.tonic--enabled .ui-dialog .ui-dialog-titlebar-close {
+  background: none;
+}
+.admin-bar body.tonic--enabled .ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick {
+  top: 100%;
+}
+.admin-bar body.tonic--enabled .ui-dialog fieldset {
+  background-color: transparent;
+  border: none;
+}
+.admin-bar body.tonic--enabled .layout {
+  padding-top: 0;
+}/*# sourceMappingURL=tonic.css.map */

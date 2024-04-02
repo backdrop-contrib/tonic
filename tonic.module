@@ -5,31 +5,176 @@
  * modal styles.
  */
 
+
+/**
+ * Implements hook_css_alter().
+ */
+function tonic_css_alter(&$css) {
+    // unset($css[backdrop_get_path('module','system').'/css/messages.theme.css']);
+    if (_tonic_gin_is_activated('admin_bar')) {
+      unset($css[backdrop_get_path('module','admin_bar').'/css/admin_bar.css']);
+    }
+}
+
 /**
  * Implements hook_preprocess_page().
  *
  * Add admin bar styles to the layout.
  */
 function tonic_preprocess_page(&$variables) {
-  if (_tonic_gin_is_active() && $GLOBALS['theme_key'] != 'gin') {
-    $path_to_gin = backdrop_get_path('theme', 'gin');
-    backdrop_add_css($path_to_gin . '/dist/css/theme/accent.css');
-    backdrop_add_css($path_to_gin . '/dist/css/theme/variables.css');
-    backdrop_add_css($path_to_gin . '/dist/css/layout/gin_admin_bar.css');
+  $gin_activations = _tonic_gin_is_activated('all');
+  if (!empty($gin_activations['gin'])) {
+    $basethemeurl = backdrop_get_path('theme', 'gin');
+    backdrop_add_library('tonic', 'gin_init');
+    backdrop_add_library('tonic', 'gin_settings');
+    backdrop_add_css($basethemeurl . '/dist/css/theme/font.css');
+    backdrop_add_css($basethemeurl . '/dist/css/theme/variables.css');
+    backdrop_add_css($basethemeurl . '/dist/css/theme/accent.css');
+    if (!empty($gin_activations['admin_bar'])) {
+      backdrop_add_library('tonic', 'gin_admin_bar');
+      if (config_get('admin_bar.settings', 'position_fixed')) {
+        $variables['classes'][] = 'admin-bar--fixed';
+      }
+    }
+    // @todo Make these optional?
+    backdrop_add_library('tonic', 'gin_dialog');
+    if (module_exists('coffee')) {
+      backdrop_add_library('tonic', 'gin_coffee');
+    }
+    if (module_exists('ckeditor5')) {
+      backdrop_add_library('tonic', 'gin_ckeditor5');
+    }
+
+    $variables['html_classes'] = [];
+    $config = config('gin.settings');
+    $basethemeurl = backdrop_get_path('theme', 'gin');
+
+    // Darkmode.
+    if (theme_get_setting('enable_darkmode', 'gin')) {
+      $variables['html_classes'][] = 'gin--dark-mode';
+    }
+
+    // Set accent color.
+    $variables['body_attributes']['data-gin-accent'] = theme_get_setting('preset_accent_color', 'gin');
+
+    // Set focus color.
+    $variables['body_attributes']['data-gin-focus'] = theme_get_setting('preset_focus_color', 'gin');
+
+    // High contrast mode.
+    if (theme_get_setting('high_contrast_mode', 'gin')) {
+      $variables['classes'][] = 'gin--high-contrast-mode';
+    }
+
+    // Set layout density.
+    $variables['body_attributes']['data-gin-layout-density'] = theme_get_setting('layout_density', 'gin');
+    $variables['classes'][] = 'tonic--enabled';
   }
 }
 
 /**
- * Helper function to see if Gin is active. Replicates _gin_is_active() because
- * we can't assume that function can be called if the theme isn't currently
- * loaded.
+ * Implements hook_library_info().
  */
-function _tonic_gin_is_active() {
-  if (user_access('access administration bar')) {
+function tonic_library_info() {
+  $basethemeurl = backdrop_get_path('theme', 'gin');
+
+  $libraries = array(
+    'gin_init' => array(
+      'title' => 'Init',
+      'version' => BACKDROP_VERSION,
+      'header' => TRUE,
+      'js' => array(
+        $basethemeurl . '/dist/js/init.js' => array(),
+      ),
+    ),
+    'gin_settings' => array(
+      'title' => 'Settings',
+      'version' => BACKDROP_VERSION,
+      'js' => array(
+        $basethemeurl . '/dist/js/settings.js' => array(),
+      ),
+      'css' => array(
+        $basethemeurl . '/dist/css/components/settings.css' => array(),
+      ),
+      'dependencies' => array(
+        array('gin', 'gin_once'),
+      ),
+    ),
+    'gin_dialog' => array(
+      'title' => 'Dialog',
+      'version' => BACKDROP_VERSION,
+      'css' => array(
+        $basethemeurl . '/dist/css/components/gin_dialog.css' => array(),
+        $basethemeurl . '/dist/css/theme/dialog.css' => array(),
+      ),
+    ),
+    'gin_admin_bar' => array(
+      'title' => 'Admin Bar',
+      'version' => BACKDROP_VERSION,
+      'css' => array(
+        $basethemeurl . '/dist/css/layout/gin_admin_bar.css' => array(),
+      ),
+    ),
+    'gin_ckeditor5' => array(
+      'title' => 'CKEditor5',
+      'version' => BACKDROP_VERSION,
+      'css' => array(
+        $basethemeurl . '/dist/css/components/ckeditor5.css' => array(),
+      ),
+    ),
+    'gin_coffee' => array(
+      'title' => 'Coffee',
+      'version' => BACKDROP_VERSION,
+      'css' => array(
+        $basethemeurl . '/dist/css/components/gin_coffee.css' => array(
+          'type' => 'file',
+          'media' => 'screen',
+        ),
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Helper function to see if Gin is activated but is not the current theme, and
+ * optionally whether a particular feature is activated.
+ *
+ * @param string $feature
+ *  The feature to check for. Defaults to 'gin'.
+ *
+ * @return array|bool
+ *  If $feature is 'all', returns an array of all activated features. If
+ *  $feature is a string, returns TRUE if the matching feature is activated,
+ *  FALSE otherwise.
+ */
+function _tonic_gin_is_activated($feature = 'gin') {
+  $activated = cache_get('gin_activated_' . $GLOBALS['theme_key'])->data;
+  if (empty($activated)) {
+    $activated = array();
     $themes = list_themes();
-    if ($themes['gin']->status) {
-      return TRUE;
+    // First, see if Gin is activated, and make sure it's not the current theme.
+    if ($themes['gin']->status && $GLOBALS['theme_key'] != 'gin') {
+      $activated['gin'] = TRUE;
+
+      // Check admin bar.
+      // @todo: This should be a setting in the theme as an additional check.
+      if (module_exists('admin_bar') && user_access('access administration bar')) {
+        $activated['admin_bar'] = TRUE;
+      }
     }
+    else {
+      $activated['gin'] = FALSE;
+    }
+
+    cache_set('gin_activated_' . $GLOBALS['theme_key'], $activated);
   }
-  return FALSE;
+
+  if ($feature == 'all') {
+    return $activated;
+  }
+  else {
+    return ($activated['gin'] && !empty($activated[$feature])) ? $activated[$feature] : FALSE;
+  }
+
 }

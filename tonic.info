@@ -4,6 +4,8 @@ backdrop = 1.x
 package = Administration
 type = module
 
+stylesheets[all][] = css/tonic.css
+
 tags[] = Menus
 tags[] = Site Navigation
 tags[] = User Interface
