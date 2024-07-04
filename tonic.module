@@ -5,15 +5,14 @@
  * modal styles.
  */
 
-
 /**
  * Implements hook_css_alter().
  */
 function tonic_css_alter(&$css) {
-    // unset($css[backdrop_get_path('module','system').'/css/messages.theme.css']);
-    if (_tonic_gin_is_activated('admin_bar')) {
-      unset($css[backdrop_get_path('module','admin_bar').'/css/admin_bar.css']);
-    }
+  // unset($css[backdrop_get_path('module','system').'/css/messages.theme.css']);.
+  if (_tonic_gin_is_activated('admin_bar')) {
+    unset($css[backdrop_get_path('module', 'admin_bar').'/css/admin_bar.css']);
+  }
 }
 
 /**
@@ -141,16 +140,16 @@ function tonic_library_info() {
  * optionally whether a particular feature is activated.
  *
  * @param string $feature
- *  The feature to check for. Defaults to 'gin'.
+ *   The feature to check for. Defaults to 'gin'.
  *
  * @return array|bool
- *  If $feature is 'all', returns an array of all activated features. If
- *  $feature is a string, returns TRUE if the matching feature is activated,
- *  FALSE otherwise.
+ *   If $feature is 'all', returns an array of all activated features. If
+ *   $feature is a string, returns TRUE if the matching feature is activated,
+ *   FALSE otherwise.
  */
 function _tonic_gin_is_activated($feature = 'gin') {
-  $activated = cache_get('gin_activated_' . $GLOBALS['theme_key'])->data;
-  if (empty($activated)) {
+  $activated = cache_get('gin_activated_' . $GLOBALS['theme_key']);
+  if (empty($activated->data)) {
     $activated = array();
     $themes = list_themes();
     // First, see if Gin is activated, and make sure it's not the current theme.
@@ -171,10 +170,10 @@ function _tonic_gin_is_activated($feature = 'gin') {
   }
 
   if ($feature == 'all') {
-    return $activated;
+    return $activated->data;
   }
   else {
-    return ($activated['gin'] && !empty($activated[$feature])) ? $activated[$feature] : FALSE;
+    return ($activated->data['gin'] && !empty($activated->data[$feature])) ? $activated->data[$feature] : FALSE;
   }
 
 }
