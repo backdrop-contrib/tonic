@@ -148,8 +148,9 @@ function tonic_library_info() {
  *   FALSE otherwise.
  */
 function _tonic_gin_is_activated($feature = 'gin') {
-  $activated = cache_get('gin_activated_' . $GLOBALS['theme_key']);
-  if (empty($activated->data)) {
+  $activated_cache = cache_get('gin_activated_' . $GLOBALS['theme_key']);
+  $activated = $activated_cache->data ? $activated_cache->data : array();
+  if (empty($activated)) {
     $activated = array();
     $themes = list_themes();
     // First, see if Gin is activated, and make sure it's not the current theme.
@@ -170,10 +171,10 @@ function _tonic_gin_is_activated($feature = 'gin') {
   }
 
   if ($feature == 'all') {
-    return $activated->data;
+    return $activated;
   }
   else {
-    return ($activated->data['gin'] && !empty($activated->data[$feature])) ? $activated->data[$feature] : FALSE;
+    return ($activated['gin'] && !empty($activated[$feature])) ? $activated[$feature] : FALSE;
   }
 
 }
