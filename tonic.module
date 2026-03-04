@@ -5,8 +5,9 @@
  * modal styles.
  */
 
-include_once(backdrop_get_path('theme', 'gin') . '/includes/shared.php');
-
+if (file_exists(backdrop_get_path('theme', 'gin') . '/includes/shared.php')) {
+  include_once(backdrop_get_path('theme', 'gin') . '/includes/shared.php');
+}
 
 /**
  * Implements hook_library_info_alter().
@@ -35,7 +36,9 @@ function tonic_library_info_alter(&$libraries, $module) {
 function tonic_preprocess_page(&$variables) {
   $gin_activations = _tonic_gin_is_activated('all');
   if (!empty($gin_activations['gin'])) {
-    gin_add_module_libraries();
+    if (function_exists('gin_add_module_libraries')) {
+      gin_add_module_libraries();
+    }
     $basethemeurl = backdrop_get_path('theme', 'gin');
     backdrop_add_library('gin', 'gin_init');
     backdrop_add_css($basethemeurl . '/dist/css/theme/font.css');
